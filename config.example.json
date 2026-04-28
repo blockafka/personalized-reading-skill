@@ -1,0 +1,21 @@
+{
+  "llm": {
+    "api_key": "sk-YOUR_API_KEY_HERE",
+    "base_url": "https://api.openai.com/v1",
+    "model": "gpt-4o-mini",
+    "timeout": 60
+  },
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "database": "archivist",
+    "user": "your_db_user",
+    "password": "your_db_password"
+  },
+  "behavior_tracking": {
+    "strong_signal_threshold": 5,
+    "decay_rate": 0.95,
+    "topic_boost": 3.0,
+    "min_score": 0.01
+  }
+}

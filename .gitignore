@@ -1,0 +1,28 @@
+# 配置文件（含敏感信息）
+config.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# 用户数据
+users/*/
+!users/u_test/
+
+# 临时文件
+raw_data/
+/tmp/
+*.tmp
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
