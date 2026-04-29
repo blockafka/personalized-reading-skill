@@ -16,6 +16,11 @@
 
 3. **LLM API**：配置 `config.json` 中的 `api_key`、`base_url`、`model`
 
+4. **Python 依赖**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
 ---
 
 ## 快速开始
@@ -61,6 +66,7 @@ personalized_reading_skill/
 ├── README.md                     # 本文件
 ├── config.example.json           # 配置模板
 ├── config_loader.py              # 配置加载
+├── requirements.txt              # Python 依赖
 ├── personalized_archivist_agent.py  # 推荐引擎
 ├── prompts/
 │   ├── intake.md                 # 问卷 prompt
