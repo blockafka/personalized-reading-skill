@@ -145,13 +145,13 @@ def generate_keywords(
     try:
         from openai import OpenAI
     except ImportError:
-        print("   ⚠️  未安装 openai，跳过 LLM 关键词生成", file=sys.stderr)
+        print("   ⚠️  openai 包未安装（pip install openai），跳过 LLM 关键词生成", file=sys.stderr)
         return [query] if query else []
 
     llm = get_llm_config()
     api_key = llm.get("api_key")
     if not api_key:
-        print("   ⚠️  未配置 api_key，跳过 LLM 关键词生成", file=sys.stderr)
+        print("   ⚠️  未配置 LLM api_key，跳过 LLM 关键词生成", file=sys.stderr)
         return [query] if query else []
 
     # 禁用代理，避免系统代理干扰
@@ -192,7 +192,7 @@ def generate_keywords(
                 keywords.append(kw)
         return keywords[:10]  # 中英文各最多 5 个，合计最多 10 个
     except Exception as e:
-        print(f"   ⚠️  LLM 关键词生成失败: {e}", file=sys.stderr)
+        print(f"   ⚠️  LLM 关键词生成失败（API 或模型配置问题）：{e}", file=sys.stderr)
         return [query] if query else []
 
 

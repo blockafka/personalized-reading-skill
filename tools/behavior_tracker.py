@@ -143,13 +143,13 @@ def _trigger_llm_update(user_dir: Path, signal_queue: list[dict]) -> bool:
     try:
         from openai import OpenAI
     except ImportError:
-        print("   ⚠️  未安装 openai，跳过 LLM 增量更新", file=sys.stderr)
+        print("   ⚠️  openai 包未安装（pip install openai），跳过 LLM 增量更新", file=sys.stderr)
         return False
 
     llm = get_llm_config()
     api_key = llm.get("api_key")
     if not api_key:
-        print("   ⚠️  未配置 api_key，跳过 LLM 增量更新", file=sys.stderr)
+        print("   ⚠️  未配置 LLM api_key，跳过 LLM 增量更新", file=sys.stderr)
         return False
 
     # 加载 merger.md prompt 模板
@@ -212,7 +212,7 @@ def _trigger_llm_update(user_dir: Path, signal_queue: list[dict]) -> bool:
         )
         llm_output = response.choices[0].message.content.strip()
     except Exception as e:
-        print(f"   ⚠️  LLM 调用失败: {e}", file=sys.stderr)
+        print(f"   ⚠️  LLM 增量更新失败（API 或模型配置问题）：{e}", file=sys.stderr)
         return False
 
     # 解析 LLM 输出，提取 reading_habit patch 和 persona patch
