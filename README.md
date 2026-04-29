@@ -101,6 +101,15 @@ personalized_reading_skill/
 
 ## 常见问题
 
+**Q：报错"openai 包未安装"？**
+A：确保你的 `python3` 指向安装了依赖的环境。在 shell 配置中（如 `~/.zshrc`）加入：
+```bash
+export PATH="/path/to/your/python/bin:$PATH"
+# 例如 conda 环境：
+export PATH="/opt/homebrew/Caskroom/miniconda/base/envs/miracleplus/bin:$PATH"
+```
+重启 Claude Code 后生效。
+
 **Q：不想用飞书数据？**
 A：初始化时选"跳过"，仅凭问卷生成画像。
 
