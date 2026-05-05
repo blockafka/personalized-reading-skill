@@ -277,12 +277,21 @@ def calc_profile_boost(
 ) -> float:
     """
     计算画像加权分：
-    - tag_boost：文章 tags 与 tag_scores 的加权交集，归一化到 [0, 1]
+    - tag_boost：文章 title+title_en 与 tag_scores 的关键词匹配得分，归一化到 [0, 1]
     - source_boost：来源在 source_prefs 中 +0.2
+    注意：scraped_contents 无 tags 列，改用标题匹配 tag_scores keys
     """
-    article_tags = article.get("tags") or []
-    tag_boost = sum(tag_scores.get(t, 0.0) for t in article_tags)
-    tag_boost = min(tag_boost / 10.0, 1.0)
+    title = article.get("title", "") or ""
+    title_en = article.get("title_en", "") or ""
+    combined = (title + " " + title_en).lower()
+
+    # 用 tag_scores 的 key 做关键词匹配
+    matched_score = 0.0
+    for keyword, score in tag_scores.items():
+        if keyword.lower() in combined:
+            matched_score += score
+
+    tag_boost = min(matched_score / 10.0, 1.0)
     source_boost = 0.2 if article.get("source") in source_prefs else 0.0
     return tag_boost + source_boost
 
