@@ -99,35 +99,6 @@ personalized_reading_skill/
 
 ---
 
-## 常见问题
-
-**Q：报错"openai 包未安装"？**
-A：确保你的 `python3` 指向安装了依赖的环境。在 shell 配置中（如 `~/.zshrc`）加入：
-```bash
-export PATH="/path/to/your/python/bin:$PATH"
-# 例如 conda 环境：
-export PATH="/opt/homebrew/Caskroom/miniconda/base/envs/miracleplus/bin:$PATH"
-```
-重启 Claude Code 后生效。
-
-**Q：不想用飞书数据？**
-A：初始化时选"跳过"，仅凭问卷生成画像。
-
-**Q：飞书数据太多，想限制数量？**
-A：采集命令加参数：
-```bash
-python3 tools/feishu_cli_collector.py --user-id xxx --msg-limit 100 --doc-limit 30
-```
-
-**Q：如何回滚画像版本？**
-A：
-```bash
-ls users/{user_id}/versions/
-cp users/{user_id}/versions/v{n}/reading_habit.md users/{user_id}/reading_habit.md
-```
-
----
-
 ## License
 
 MIT
