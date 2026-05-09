@@ -6,20 +6,24 @@
 
 ## 前置条件
 
-1. **飞书 CLI**（用于采集消息和文档）
+1. **uv**（Python 环境管理，一次性安装）
+   ```bash
+   # macOS / Linux
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   # 或
+   brew install uv
+   ```
+   安装后无需其他操作，后续 Python 依赖由 uv 自动管理在项目内的隔离 venv。
+
+2. **飞书 CLI**（用于采集消息和文档）
    ```bash
    lark-cli auth login
    # 选择业务域：im（消息）+ docs（文档）
    ```
 
-2. **数据库**：PostgreSQL，配置 `config.json`（参考 `config.example.json`）
+3. **数据库**：PostgreSQL，配置 `config.json`（参考 `config.example.json`）
 
-3. **LLM API**：配置 `config.json` 中的 `api_key`、`base_url`、`model`
-
-4. **Python 依赖**
-   ```bash
-   pip install -r requirements.txt
-   ```
+4. **LLM API**：配置 `config.json` 中的 `api_key`、`base_url`、`model`
 
 ---
 

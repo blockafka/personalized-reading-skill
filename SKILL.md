@@ -9,6 +9,22 @@ allowed-tools: Read, Write, Edit, Bash
 
 # 个性化阅读推荐 Skill
 
+## 前置条件
+
+使用本 skill 前，需要安装 **uv**（Python 环境管理工具，一次性安装）：
+
+```bash
+# macOS / Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 或通过 Homebrew
+brew install uv
+```
+
+安装后无需其他操作，后续所有 Python 脚本由 uv 自动管理隔离的虚拟环境。
+
+---
+
 ## 触发条件
 
 当用户说以下任意内容时，进入**初始化模式**：
@@ -40,10 +56,12 @@ allowed-tools: Read, Write, Edit, Bash
 | 检查用户是否存在 | `Bash` → `ls ${CLAUDE_SKILL_DIR}/users/` |
 | 读取用户画像文件 | `Read` 工具 |
 | 写入、更新画像文件 | `Write`、`Edit` 工具 |
-| 初始化用户画像 | `Bash` → `python ${CLAUDE_SKILL_DIR}/tools/profile_writer.py` |
-| 记录行为信号 | `Bash` → `python ${CLAUDE_SKILL_DIR}/tools/behavior_tracker.py` |
-| 飞书 CLI 数据采集 | `Bash` → `python ${CLAUDE_SKILL_DIR}/tools/feishu_cli_collector.py` |
-| 个性化推荐查询 | `Bash` → `python ${CLAUDE_SKILL_DIR}/personalized_archivist_agent.py` |
+| 初始化用户画像 | `Bash` → `uv run --project ${CLAUDE_SKILL_DIR} python ${CLAUDE_SKILL_DIR}/tools/profile_writer.py` |
+| 记录行为信号 | `Bash` → `uv run --project ${CLAUDE_SKILL_DIR} python ${CLAUDE_SKILL_DIR}/tools/behavior_tracker.py` |
+| 飞书 CLI 数据采集 | `Bash` → `uv run --project ${CLAUDE_SKILL_DIR} python ${CLAUDE_SKILL_DIR}/tools/feishu_cli_collector.py` |
+| 个性化推荐查询 | `Bash` → `uv run --project ${CLAUDE_SKILL_DIR} python ${CLAUDE_SKILL_DIR}/personalized_archivist_agent.py` |
+
+**Python 环境**：所有 Python 脚本必须通过 `uv run --project ${CLAUDE_SKILL_DIR}` 执行，uv 自动在项目目录内维护隔离的 venv，依赖声明在 `pyproject.toml`，不得使用系统 Python 或手动 `pip install`。
 
 **基础目录**：用户画像写入 `./users/{user_id}/`（相对于本项目目录）。
 
@@ -93,12 +111,12 @@ lark-cli auth login
 执行采集（初始化和增量更新使用同一命令，脚本自动判断）：
 ```bash
 # 默认采集全部消息和文档（推荐先用全量，如数据量过大再自行限定）
-python ${CLAUDE_SKILL_DIR}/tools/feishu_cli_collector.py \
+uv run --project ${CLAUDE_SKILL_DIR} python ${CLAUDE_SKILL_DIR}/tools/feishu_cli_collector.py \
   --user-id {user_id} \
   --base-dir ${CLAUDE_SKILL_DIR}/users
 
 # 如需限定采集数量，加上 --msg-limit 和 --doc-limit
-python ${CLAUDE_SKILL_DIR}/tools/feishu_cli_collector.py \
+uv run --project ${CLAUDE_SKILL_DIR} python ${CLAUDE_SKILL_DIR}/tools/feishu_cli_collector.py \
   --user-id {user_id} \
   --base-dir ${CLAUDE_SKILL_DIR}/users \
   --msg-limit 100 \
@@ -182,7 +200,7 @@ source_prefs 映射：0=hacker_news, 1=twitter, 2=arxiv, 3=github_trending, 5=hu
 
 **2. 调用 profile_writer.py 写入**（用 Bash）：
 ```bash
-python ${CLAUDE_SKILL_DIR}/tools/profile_writer.py \
+uv run --project ${CLAUDE_SKILL_DIR} python ${CLAUDE_SKILL_DIR}/tools/profile_writer.py \
   --action create \
   --user-id {user_id} \
   --reading-habit /tmp/reading_habit_draft.md \
@@ -211,7 +229,7 @@ python ${CLAUDE_SKILL_DIR}/tools/profile_writer.py \
 用户触发推荐时：
 
 ```bash
-python ${CLAUDE_SKILL_DIR}/personalized_archivist_agent.py \
+uv run --project ${CLAUDE_SKILL_DIR} python ${CLAUDE_SKILL_DIR}/personalized_archivist_agent.py \
   --user-id {user_id} \
   --query "{用户输入的 query，如无则留空}" \
   --limit 20 \
@@ -227,7 +245,7 @@ python ${CLAUDE_SKILL_DIR}/personalized_archivist_agent.py \
 用户表达"感兴趣"或"不感兴趣"时，调用 behavior_tracker.py：
 
 ```bash
-python ${CLAUDE_SKILL_DIR}/tools/behavior_tracker.py \
+uv run --project ${CLAUDE_SKILL_DIR} python ${CLAUDE_SKILL_DIR}/tools/behavior_tracker.py \
   --user-id {user_id} \
   --article '{"title":"{文章标题}","tags":["{tag1}","{tag2}"]}' \
   --behavior {like|dislike} \
@@ -252,7 +270,7 @@ python ${CLAUDE_SKILL_DIR}/tools/behavior_tracker.py \
 
 1. 执行增量采集（与初始化同一命令，脚本自动读取 sync_state 只拉新数据）：
 ```bash
-python ${CLAUDE_SKILL_DIR}/tools/feishu_cli_collector.py \
+uv run --project ${CLAUDE_SKILL_DIR} python ${CLAUDE_SKILL_DIR}/tools/feishu_cli_collector.py \
   --user-id {user_id} \
   --base-dir ${CLAUDE_SKILL_DIR}/users
 ```
@@ -266,7 +284,7 @@ python ${CLAUDE_SKILL_DIR}/tools/feishu_cli_collector.py \
 4. 参考 `${CLAUDE_SKILL_DIR}/prompts/merger.md` 分析当前批次内容
 5. 调用 profile_writer.py 写入更新版本：
 ```bash
-python ${CLAUDE_SKILL_DIR}/tools/profile_writer.py \
+uv run --project ${CLAUDE_SKILL_DIR} python ${CLAUDE_SKILL_DIR}/tools/profile_writer.py \
   --action update \
   --user-id {user_id} \
   --reading-habit-patch /tmp/reading_habit_patch.md \

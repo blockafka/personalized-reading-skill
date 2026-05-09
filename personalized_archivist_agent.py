@@ -97,15 +97,86 @@ def load_user_profile(base_dir: Path, user_id: str) -> dict:
 # 实时热点
 # ---------------------------------------------------------------------------
 
-def fetch_trending_tags(conn, hours: int = 24, limit: int = 20) -> list[dict]:
+def fetch_trending_tags(conn, hours: int = 72, limit: int = 20) -> list[dict]:
     """
-    获取最近 N 小时数据库高频关键词（从 title 提取）
+    获取最近 N 小时数据库高频关键词（从英文 title 按空格切词统计词频）
 
-    注意：scraped_contents 表没有 tags 列，这里返回空列表
-    后续可以通过 NLP 从 title 提取关键词
+    scraped_contents 表无 tags 列，title 为英文，title_en 为中文翻译。
+    直接对英文 title 做空格分词 + 停用词过滤，统计高频词作为热点信号。
     """
-    # TODO: 实现从 title 提取高频关键词的逻辑
-    return []
+    STOPWORDS = {
+        # 冠词、介词、连词
+        "a", "an", "the", "and", "or", "but", "in", "on", "at", "to", "for",
+        "of", "with", "by", "from", "into", "onto", "upon", "over", "under",
+        "between", "among", "through", "during", "before", "after", "above",
+        "below", "since", "until", "while", "although", "because", "though",
+        # 代词
+        "i", "you", "he", "she", "we", "they", "it", "its", "my", "your",
+        "his", "her", "our", "their", "this", "that", "these", "those",
+        "who", "which", "what", "where", "when", "why", "how",
+        # 动词（高频但无意义）
+        "is", "are", "was", "were", "be", "been", "being",
+        "has", "have", "had", "do", "does", "did",
+        "will", "would", "could", "should", "may", "might", "must",
+        "get", "got", "make", "made", "take", "took", "give", "gave",
+        "go", "went", "come", "came", "see", "saw", "know", "knew",
+        "say", "said", "let", "put", "set", "run", "ran",
+        # 副词、形容词（泛用）
+        "not", "no", "so", "as", "if", "up", "out", "about", "than",
+        "more", "most", "very", "just", "also", "even", "still", "now",
+        "then", "here", "there", "all", "any", "each", "every", "both",
+        "few", "many", "much", "some", "such", "own", "same", "other",
+        "new", "old", "good", "bad", "big", "small", "long", "short",
+        "first", "last", "next", "only", "well", "back", "way",
+        # 其他
+        "can", "via", "vs", "using", "used", "like", "need", "want",
+        "one", "two", "three", "part", "time", "year", "day",
+        # 标题常见噪音词
+        "self", "blog", "man", "making", "introducing", "full", "reader",
+        "show", "ask", "tell", "think", "work", "works", "working",
+        "build", "building", "built", "write", "writing", "written",
+        "open", "free", "simple", "easy", "fast", "better", "best",
+        "real", "world", "based", "without", "inside", "look", "looks",
+        "things", "thing", "something", "anything", "everything",
+        "text", "behind", "getting", "flow", "media", "problem",
+        "case", "high", "low", "right", "left", "side", "end",
+        "help", "helps", "helped", "start", "started", "stop",
+    }
+
+    sql = """
+        SELECT title
+        FROM scraped_contents
+        WHERE created_at >= NOW() - INTERVAL '%s hours'
+          AND source = 0
+          AND title IS NOT NULL AND title != ''
+        LIMIT 500;
+    """
+    cur = conn.cursor()
+    try:
+        cur.execute(sql, (hours,))
+        rows = cur.fetchall()
+    except Exception as e:
+        print(f"   ⚠️  热点 tags 查询失败: {e}", file=sys.stderr)
+        return []
+    finally:
+        cur.close()
+
+    import re
+    freq: dict[str, int] = {}
+    for (title,) in rows:
+        words = re.split(r"[^a-zA-Z0-9]+", title)
+        for word in words:
+            w = word.lower()
+            if len(w) >= 3 and w not in STOPWORDS:
+                freq[w] = freq.get(w, 0) + 1
+
+    # 过滤出现次数 >= 2 的词，避免噪音
+    trending = sorted(
+        [{"tag": w, "score": float(c)} for w, c in freq.items() if c >= 2],
+        key=lambda x: x["score"],
+        reverse=True,
+    )
+    return trending[:limit]
 
 
 # ---------------------------------------------------------------------------
